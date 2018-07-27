@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:rdb="http://www.dangdang.com/schema/ddframe/rdb"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/tx
+                        http://www.springframework.org/schema/tx/spring-tx.xsd
+
+                        http://www.dangdang.com/schema/ddframe/rdb
+                        http://www.dangdang.com/schema/ddframe/rdb/rdb.xsd">
+
+    <bean id="database_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="${jdbc.url.112}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="maxActive" value="100"/>
+        <property name="initialSize" value="50"/>
+        <property name="maxWait" value="60000"/>
+        <property name="minIdle" value="5"/>
+    </bean>
+
+    <bean id="database_slave_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="${jdbc.url.slave.112}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="maxActive" value="100"/>
+        <property name="initialSize" value="50"/>
+        <property name="maxWait" value="60000"/>
+        <property name="minIdle" value="5"/>
+    </bean>
+
+    <bean id="database_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="${jdbc.url.103}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="maxActive" value="100"/>
+        <property name="initialSize" value="50"/>
+        <property name="maxWait" value="60000"/>
+        <property name="minIdle" value="5"/>
+    </bean>
+
+    <bean id="database_slave_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
+          destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="${jdbc.url.slave.103}"></property>
+        <property name="username" value="${jdbc.username}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+        <property name="maxActive" value="100"/>
+        <property name="initialSize" value="50"/>
+        <property name="maxWait" value="60000"/>
+        <property name="minIdle" value="5"/>
+    </bean>
+
+    <!--mybatis-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="mapperLocations" value="classpath:xmlmapper/*.xml"/>
+        <property name="dataSource" ref="shardingDataSource"/>
+        <!-- 配置Mybatis配置文件 -->
+        <property name="configLocation" value="classpath:/mybatis/mybatis-config.xml"/>
+    </bean>
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory"/>
+    </bean>
+    <!-- 注解Mapper scanner -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.lc.sharding.mybatismapper"/>
+        <property name="sqlSessionTemplateBeanName" value="sqlSession"/>
+    </bean>
+
+    <!-- 事务-->
+    <bean id="txManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="shardingDataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="txManager"/>
+    <!--分库策略-->
+    <rdb:strategy id="databaseShardingStrategy" sharding-columns="business_id"
+                  algorithm-expression="database_${business_id.longValue()}"/>
+    <!--读写分离-->
+    <rdb:master-slave-data-source id="rbb" master-data-source-ref="database_112,database_103"
+                                  slave-data-sources-ref="database_slave_112,database_slave_103"/>
+    <!--分表策略-->
+    <rdb:strategy id="tableShardingStrategy" sharding-columns="user_id,order_id"
+                  algorithm-class="com.lc.sharding.algorithm.MultipleKeysTableShardingAlgorithmImpl"/>
+
+    <rdb:data-source id="shardingDataSource">
+        <rdb:sharding-rule data-sources="rbb">
+            <rdb:table-rules>
+                <rdb:table-rule logic-table="t_order" actual-tables="database_${[112,103]}.t_order_${0..3}" database-strategy="databaseShardingStrategy"
+                                table-strategy="tableShardingStrategy"/>
+            </rdb:table-rules>
+        </rdb:sharding-rule>
+        <rdb:props>
+            <prop key="metrics.enable">true</prop>
+            <prop key="sql.show">true</prop>
+        </rdb:props>
+    </rdb:data-source>
+</beans>
