@@ -16,7 +16,7 @@
     <bean id="database_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url.112}"></property>
+        <property name="url" value="${jdbc.url}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -28,7 +28,7 @@
     <bean id="database_slave_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url.slave.112}"></property>
+        <property name="url" value="${jdbc.url}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -40,7 +40,7 @@
     <bean id="database_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url.103}"></property>
+        <property name="url" value="${jdbc.url}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -52,7 +52,7 @@
     <bean id="database_slave_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url.slave.103}"></property>
+        <property name="url" value="${jdbc.url}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -83,20 +83,22 @@
         <property name="dataSource" ref="shardingDataSource"/>
     </bean>
     <tx:annotation-driven transaction-manager="txManager"/>
+    <!--读写分离-->
+    <rdb:master-slave-data-source id="rbb_112" master-data-source-ref="database_112"
+                                  slave-data-sources-ref="database_slave_112"/>
+    <rdb:master-slave-data-source id="rbb_103" master-data-source-ref="database_103"
+                                  slave-data-sources-ref="database_slave_103"/>
     <!--分库策略-->
     <rdb:strategy id="databaseShardingStrategy" sharding-columns="business_id"
-                  algorithm-expression="database_${business_id.longValue()}"/>
-    <!--读写分离-->
-    <rdb:master-slave-data-source id="rbb" master-data-source-ref="database_112,database_103"
-                                  slave-data-sources-ref="database_slave_112,database_slave_103"/>
+                  algorithm-expression="rbb_${business_id.longValue()}"/>
     <!--分表策略-->
     <rdb:strategy id="tableShardingStrategy" sharding-columns="user_id,order_id"
                   algorithm-class="com.lc.sharding.algorithm.MultipleKeysTableShardingAlgorithmImpl"/>
 
     <rdb:data-source id="shardingDataSource">
-        <rdb:sharding-rule data-sources="rbb">
+        <rdb:sharding-rule data-sources="rbb_112,rbb_103">
             <rdb:table-rules>
-                <rdb:table-rule logic-table="t_order" actual-tables="database_${[112,103]}.t_order_${0..3}" database-strategy="databaseShardingStrategy"
+                <rdb:table-rule logic-table="t_order" actual-tables="t_order_${0..3}" database-strategy="databaseShardingStrategy"
                                 table-strategy="tableShardingStrategy"/>
             </rdb:table-rules>
         </rdb:sharding-rule>
