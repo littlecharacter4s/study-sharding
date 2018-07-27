@@ -7,9 +7,18 @@
                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
                 http://www.springframework.org/schema/aop
                 http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!-- 将多个配置文件读取到容器中，交给Spring管理 -->
+    <bean id="propertyConfigurer"
+          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <!-- 这里支持多种寻址方式：classpath和file -->
+                <value>classpath:/config/jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
 
-    <import resource="config/spring-datasource.xml" />
     <context:component-scan base-package="com.lc.sharding"/>
-    <context:annotation-config />
-    <aop:aspectj-autoproxy proxy-target-class="true" />
+
+    <import resource="config/spring-datasource.xml"/>
 </beans>
