@@ -26,7 +26,6 @@
             <artifactId>sharding-jdbc-config-spring</artifactId>
             <version>1.4.0</version>
         </dependency>
-
         <!-- junit -->
         <dependency>
             <groupId>junit</groupId>

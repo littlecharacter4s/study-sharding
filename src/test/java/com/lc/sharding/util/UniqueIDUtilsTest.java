@@ -23,7 +23,7 @@ import java.util.List;
 @ContextConfiguration({"classpath:applicationContext.xml"}) // 加载配置文件*/
 public class UniqueIDUtilsTest {
     @Autowired
-    TOrderMapper tOrderMapper;
+    private TOrderMapper tOrderMapper;
 
     @Before
     public void init() throws Exception {

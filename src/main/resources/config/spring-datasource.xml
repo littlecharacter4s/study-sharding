@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:rdb="http://www.dangdang.com/schema/ddframe/rdb"
-
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                         http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/tx
                         http://www.springframework.org/schema/tx/spring-tx.xsd
-
                         http://www.dangdang.com/schema/ddframe/rdb
                         http://www.dangdang.com/schema/ddframe/rdb/rdb.xsd">
 
     <bean id="database_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url}"></property>
+        <property name="url" value="${jdbc.url.112}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -28,7 +25,7 @@
     <bean id="database_slave_112" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url}"></property>
+        <property name="url" value="${jdbc.url.slave.112}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -40,7 +37,7 @@
     <bean id="database_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url}"></property>
+        <property name="url" value="${jdbc.url.103}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -52,7 +49,7 @@
     <bean id="database_slave_103" class="com.alibaba.druid.pool.DruidDataSource" init-method="init"
           destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="${jdbc.url}"></property>
+        <property name="url" value="${jdbc.url.slave.103}"></property>
         <property name="username" value="${jdbc.username}"></property>
         <property name="password" value="${jdbc.password}"></property>
         <property name="maxActive" value="100"/>
@@ -83,6 +80,7 @@
         <property name="dataSource" ref="shardingDataSource"/>
     </bean>
     <tx:annotation-driven transaction-manager="txManager"/>
+
     <!--读写分离-->
     <rdb:master-slave-data-source id="rbb_112" master-data-source-ref="database_112"
                                   slave-data-sources-ref="database_slave_112"/>

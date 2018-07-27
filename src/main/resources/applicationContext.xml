@@ -16,9 +16,12 @@
                 <value>classpath:/config/jdbc.properties</value>
             </list>
         </property>
+        <property name="ignoreUnresolvablePlaceholders" value="true"/>
     </bean>
 
     <context:component-scan base-package="com.lc.sharding"/>
+    <context:annotation-config />
+    <aop:aspectj-autoproxy proxy-target-class="true" />
 
     <import resource="config/spring-datasource.xml"/>
 </beans>
